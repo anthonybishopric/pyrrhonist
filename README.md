@@ -8,7 +8,8 @@ I'm building this library partly to internalize the lectures and to also provide
 
 * Bayesian Networks with causal inference
 * Markov Network representation
+* Table and Tree Factors
 * Template model generation
 * Exact inference algorithms (Variable Elimination, Belief Propagation)
-* Approximate inference algorithms
+* Approximate inference algorithms (MCMC)
 * and more!

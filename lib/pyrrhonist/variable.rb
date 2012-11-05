@@ -7,6 +7,10 @@ module Pyrrhonist
       @name = name
     end
     
+    def name
+      @name
+    end
+    
     def values=(values)
       if values.class != Hash
         raise ArgumentError, "#{values} should be a Hash of values that #{@name} can take"
@@ -14,18 +18,32 @@ module Pyrrhonist
       @values = values
     end
     
-    # retrieve the unconditional probability of the given value for this Variable. 
-    def value_of(value)
+    def cardinality
+      @values.length
+    end
+    
+    # retrieve the unconditional probability of the given assignment for this Variable. 
+    def value_of(assignment)
       
-      if not @values.key? value
-        raise ArgumentError, "#{value} is not a value that #{@name} can take"
+      unless @values.key? assignment
+        raise ArgumentError, "#{assignment} is not a assignment that #{@name} can take"
       end
       
-      return @values[value]
+      return @values[assignment]
       
     end
     
+    def assignment_for_index(index)
+      @values.keys[index]
+    end
     
+    def index_for_assignment(assignment)
+      index = @values.keys.index(assignment)
+      unless index
+        raise ArgumentError, "#{assignment} is not a well defined assignment array"
+      end
+      index
+    end
     
   end
   
