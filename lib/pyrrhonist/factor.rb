@@ -28,7 +28,7 @@ module Pyrrhonist
       reset
       variables.each do |variable|
         if variable.class != Variable
-          raise ArgumentException, "#{variable} is not of the class Variable"
+          raise ArgumentError, "#{variable.class} is not of the class Variable"
         end
       end
       @variables = variables
@@ -39,11 +39,37 @@ module Pyrrhonist
     # +assignment+:: an array assignment to every Variable in the Factor in
     # order of assignment to the Factor.
     #
-    def value_of(*assignment)
+    def value_of(hash_of_assignments)
+      assignment = ordered_values_from_hash(hash_of_assignments)
       @table[assignment_to_index(assignment)]
     end
     
+    def marginalize(variable)
+      
+    end
+
+    def assign(value, hash_of_assignments)
+      assignment = ordered_values_from_hash(hash_of_assignments)
+      @table[assignment_to_index(assignment)] = value
+    end
+    
+    def each_assignment
+      table_size.times do |index|
+        assignment = index_to_assignment(index)
+        yield(assignment, index)
+      end
+    end
+    
     private
+    
+    def ordered_values_from_hash(hash_of_assignments)
+      ordered = []
+      @variables.each_index do |index|
+        variable = @variables[index]
+        ordered[index] = hash_of_assignments[variable.name]
+      end
+      ordered
+    end
     
     def build_table_from_variables
       each_assignment do |assignment, index|       
@@ -52,13 +78,6 @@ module Pyrrhonist
           value * (variable_iterator.next.value_of assignment)
         end
         @table[index] = value
-      end
-    end
-    
-    def each_assignment
-      table_size.times do |index|
-        assignment = index_to_assignment(index)
-        yield(assignment, index)
       end
     end
     

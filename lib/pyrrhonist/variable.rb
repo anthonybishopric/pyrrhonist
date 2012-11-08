@@ -11,6 +11,16 @@ module Pyrrhonist
       @name
     end
     
+    def assignments=(assignments)
+      if assignments.class != Array
+        raise ArgumentError, "#{assignments} should be an Array of symbols representing the assignments #{@name} can take"
+      end
+      @values = {}
+      assignments.each do |assignment|
+        @values[assignment] = 1
+      end
+    end
+    
     def values=(values)
       if values.class != Hash
         raise ArgumentError, "#{values} should be a Hash of values that #{@name} can take"
@@ -31,6 +41,13 @@ module Pyrrhonist
       
       return @values[assignment]
       
+    end
+    
+    def normalize
+      sum = @values.values.inject 0, :+
+      @values.keys.each do |key|
+        @values[key] = @values[key] / sum
+      end
     end
     
     def assignment_for_index(index)
