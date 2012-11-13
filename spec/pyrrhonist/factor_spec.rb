@@ -4,20 +4,17 @@ module Pyrrhonist
   describe Factor do
     
     subject do
-      apple_color = Variable.new(:apple_color)
-      apple_color.values = {
-        red: 0.7,
-        green: 0.3
-      }
-      
-      deliciousness = Variable.new(:deliciousness)
-      deliciousness.values = {
-        high: 0.4,
-        low: 0.6
-      }
-      
       factor = Factor.new
-      factor.variables = apple_color, deliciousness
+      
+      factor.define :apple_color, :deliciousness do 
+        {
+          [:red, :high]   => 0.28,
+          [:green, :high] => 0.12,
+          [:red, :low]    => 0.42, 
+          [:green, :low]  => 0.18
+        }
+      end
+      
       factor
     end
     
@@ -37,15 +34,16 @@ module Pyrrhonist
     end
     
     it "creates a new factor from its product with another factor" do
-      state_grown = Variable.new :state_grown
-      state_grown.assignments = :california, :oregon, :washington
-      apple_color = Variable.new :apple_color 
-      apple_color.assignments = :red, :green
-      other_factor = Factor.new
-      other_factor.variables = state_grown, apple_color
-      other_factor.assign 0.5, state_grown: :oregon, apple_color: :green
+      state_grown_factor = Factor.new
       
-      factor_product = subject * other_factor
+      state_grown_factor.define :apple_color, :state_grown do
+        {
+          [:red, :oregon]   => 0.5,
+          [:green, :oregon] => 0.5
+        }
+      end
+            
+      factor_product = subject * state_grown_factor
       
       factor_product.value_of({
         apple_color: :green,

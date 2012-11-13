@@ -1,3 +1,4 @@
+require 'set'
 
 module Pyrrhonist
   
@@ -14,25 +15,21 @@ module Pyrrhonist
     #
     def reset
       @variables = []
-      @variable_names = []
       @table = []
     end
     
-    # Given a set of Variables, build a naive table Factor that assumes
-    # even distribution of assignments (ie P(A) == P(A | B) for all A,B).
-    #   
-    # use #set_assignment to override specific assignments
-    #
-    #
-    def variables=(variables)
-      reset
-      variables.each do |variable|
-        if variable.class != Variable
-          raise ArgumentError, "#{variable.class} is not of the class Variable"
-        end
+    # define the variables and their values
+    def define(*variables)
+      if variables
+        reset
+        value_assignments = yield
+
+        build_table_from_variables_and_values variables, value_assignments       
       end
-      @variables = variables
-      build_table_from_variables
+    end
+    
+    def variables
+      @variables
     end
 
     #
@@ -62,23 +59,54 @@ module Pyrrhonist
     
     private
     
-    def ordered_values_from_hash(hash_of_assignments)
-      ordered = []
-      @variables.each_index do |index|
-        variable = @variables[index]
-        ordered[index] = hash_of_assignments[variable.name]
+    def unique_variables_from_factors(other_factor)
+      all_variables = Set.new
+      
+      get_names = lambda do |variable|
+        all_variables.add variable.name
       end
-      ordered
+      
+      @variables.each &get_names
+      other_factor.variables.each &get_names
+      
+      all_variables.to_a
     end
     
-    def build_table_from_variables
-      each_assignment do |assignment, index|       
-        variable_iterator = @variables.each
-        value = assignment.inject(1) do |value, assignment|
-          value * (variable_iterator.next.value_of assignment)
-        end
-        @table[index] = value
+    def ordered_values_from_hash(hash_of_assignments)
+      @variables.map do |variable|
+        hash_of_assignments[variable.name]
       end
+    end
+    
+    def build_table_from_variables_and_values(variables, values)
+      hash_of_assignments = hash_of_assignments_from_values_table variables, values
+      build_variable_instances variables, hash_of_assignments
+
+      apply_all_values_to_table values
+    end
+    
+    def hash_of_assignments_from_values_table(variables, values)
+      hash_of_assignments = {}
+      values.keys.each do |assignments|
+        assignments.each_with_index do |assignment, index|
+          (hash_of_assignments[variables[index]] ||= Set.new).add(assignment)
+        end
+      end
+      hash_of_assignments
+    end
+    
+    def build_variable_instances(variables, hash_of_assignments)
+      @variables = variables.each_with_index.map do |variable, index|
+        variable_instance = Variable.new(variable)
+        variable_instance.assignments = hash_of_assignments[variable].to_a
+        variable_instance
+      end
+    end
+    
+    def apply_all_values_to_table(values)
+      each_assignment do |assignment, index|
+        @table[index] = values[assignment]
+      end      
     end
     
     def table_size
