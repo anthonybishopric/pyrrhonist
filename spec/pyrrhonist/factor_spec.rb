@@ -58,6 +58,11 @@ module Pyrrhonist
       marginal_factor.value_of(deliciousness: :high).should eq(0.4)
     end
     
+    it "can observe evidence which creates a new factor with reduced cardinality in its variables" do
+      observed = subject.observe(apple_color: :red)
+      observed.value_of(apple_color: :red, deliciousness: :low).should eq(0.6)
+    end
+    
   end
   
 end
