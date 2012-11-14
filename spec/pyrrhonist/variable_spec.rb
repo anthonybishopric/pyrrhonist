@@ -6,39 +6,26 @@ module Pyrrhonist
     context "with assignments but no values" do
       
       subject do
-        variable = Variable.new(:apple_color)
-        variable.assignments = :green, :red
-        variable
+        Variable.new(:apple_color, [:green, :red])
       end
       
       it "has a cardinality of 2" do
         subject.cardinality.should eq 2
       end
       
-      it "has equal value for any assignment by default" do
-        subject.value_of(:green).should eq 1
-        subject.value_of(:red).should eq 1
+      it "indexes assignments by ordinal value" do
+        subject.index_for_assignment(:green).should eq(0)
       end
       
-      context "and then has specific values assigned" do
-        
-        before do
-          subject.values = {
-            green: 0.8,
-            red: 1.2
-          }
-        end
-        
-        it "takes specific values with a weight" do
-          subject.value_of(:green).should eq 0.8
-        end
-        
-        it "normalizes such that the sum of each value in the factor is 1" do
-          subject.normalize
-          subject.value_of(:green).should eq 0.4
-          subject.value_of(:red).should eq 0.6
-        end
-        
+      it "can take an index and return the associated assignment" do
+        subject.assignment_for_index(1).should eq(:red)
+      end
+      
+      it "equals another variable with the same name and assignments" do
+        variable2 = Variable.new(:apple_color, [:green, :red])
+        subject.should eq(variable2)
+        (subject == variable2).should be_true
+        (subject.eql?(variable2)).should be_true
       end
       
     end

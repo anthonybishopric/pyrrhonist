@@ -3,64 +3,46 @@ module Pyrrhonist
   
   class Variable
     
-    def initialize(name)
-      @name = name
-    end
+    attr_accessor :name, :assignments
     
-    def name
-      @name
-    end
-    
-    def assignments=(assignments)
-      if assignments.class != Array
-        raise ArgumentError, "#{assignments} should be an Array of symbols representing the assignments #{@name} can take"
-      end
-      @values = {}
-      assignments.each do |assignment|
-        @values[assignment] = 1
-      end
-    end
-    
-    def values=(values)
-      if values.class != Hash
-        raise ArgumentError, "#{values} should be a Hash of values that #{@name} can take"
-      end
-      @values = values
+    def initialize(name, assignments)
+      self.name = name
+      self.assignments = assignments
     end
     
     def cardinality
-      @values.length
-    end
-    
-    # retrieve the unconditional probability of the given assignment for this Variable. 
-    def value_of(assignment)
-      
-      unless @values.key? assignment
-        raise ArgumentError, "#{assignment} is not a assignment that #{@name} can take"
-      end
-      
-      return @values[assignment]
-      
-    end
-    
-    def normalize
-      sum = @values.values.inject 0, :+
-      @values.keys.each do |key|
-        @values[key] = @values[key] / sum
-      end
+      self.assignments.length
     end
     
     def assignment_for_index(index)
-      @values.keys[index]
+      self.assignments[index]
     end
     
     def index_for_assignment(assignment)
-      index = @values.keys.index(assignment)
+      index = self.assignments.index(assignment)
       unless index
-        raise ArgumentError, "#{assignment} is not a well defined assignment array"
+        raise ArgumentError, "#{assignment} is not a well defined assignment; must be one of #{self.assignments}"
       end
       index
     end
+   
+   def hash
+     self.assignments.inject(self.name.hash) do |hash, assignment|
+       hash + assignment.hash
+     end
+   end
+   
+   def eql?(other_variable)
+     self==other_variable
+   end
+   
+   def ==(other_variable)
+     if other_variable.nil? or other_variable.class != Variable
+       false
+     else
+       self.name == other_variable.name and self.assignments == other_variable.assignments
+     end
+   end
     
   end
   
