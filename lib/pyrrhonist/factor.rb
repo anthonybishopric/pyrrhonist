@@ -61,7 +61,14 @@ module Pyrrhonist
     end
     
     def marginalize(variable_name)
+      assignment_index_to_remove, marginal_variables = get_marginalized_variables(variable_name)
       
+      marginal_factor = Factor.new
+      marginal_factor.variables = marginal_variables
+      
+      assign_value_to_marginalized_factor(assignment_index_to_remove, marginal_factor)
+        
+      marginal_factor
     end
 
     def assign(value, hash_of_assignments)
@@ -73,6 +80,31 @@ module Pyrrhonist
       table_size.times do |index|
         assignment = index_to_assignment(index)
         yield(assignment, index)
+      end
+    end
+    
+    def get_marginalized_variables(variable_name)
+      assignment_index_to_remove = -1
+      marginal_variables = []
+      
+      self.variables.each_with_index do |variable, index|
+        if variable.name == variable_name
+          assignment_index_to_remove = index
+        else
+          marginal_variables.push variable
+        end
+      end
+
+      [assignment_index_to_remove, marginal_variables]
+    end
+    
+    def assign_value_to_marginalized_factor(assignment_index_to_remove, marginal_factor)
+      each_assignment do |assignment, index|
+        assignment.delete_at assignment_index_to_remove
+        marginal_assignment_index = marginal_factor.assignment_to_index(assignment)
+        
+        marginal_factor.table[marginal_assignment_index] ||= 0
+        marginal_factor.table[marginal_assignment_index] += self.table[index]
       end
     end
     
