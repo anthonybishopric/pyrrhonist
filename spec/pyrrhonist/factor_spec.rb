@@ -8,10 +8,10 @@ module Pyrrhonist
       
       factor.define :apple_color, :deliciousness do 
         {
-          [:red, :high]   => 0.28,
-          [:green, :high] => 0.12,
-          [:red, :low]    => 0.42, 
-          [:green, :low]  => 0.18
+          [:red, :high]   => 0.24,
+          [:green, :high] => 0.16,
+          [:red, :low]    => 0.46, 
+          [:green, :low]  => 0.14
         }
       end
       
@@ -19,12 +19,12 @@ module Pyrrhonist
     end
     
     it "is described by one or more variables" do
-      subject.value_of(apple_color: :green, deliciousness: :high).should eq 0.12
-      subject.value_of(apple_color: :red, deliciousness: :low).should eq 0.42
+      subject.value_of(apple_color: :green, deliciousness: :high).should eq 0.16
+      subject.value_of(apple_color: :red, deliciousness: :low).should eq 0.46
     end
     
     it "does not matter what order the keys are in" do
-      subject.value_of(deliciousness: :low, apple_color: :red).should eq 0.42
+      subject.value_of(deliciousness: :low, apple_color: :red).should eq 0.46
     end
     
     it "has custom assignments for conditional probability" do
@@ -49,7 +49,7 @@ module Pyrrhonist
         apple_color: :green,
         state_grown: :oregon,
         deliciousness: :high
-      }).should eq(0.06)
+      }).should eq(0.08)
     end 
    
     it "marginalizes specific variables and returns a new factor" do
@@ -60,7 +60,7 @@ module Pyrrhonist
     
     it "can observe evidence which creates a new factor with reduced cardinality in its variables" do
       observed = subject.observe(apple_color: :red)
-      observed.value_of(apple_color: :red, deliciousness: :low).should eq(0.6)
+      observed.value_of(apple_color: :red, deliciousness: :low).should eq(0.65714285714286)
     end
     
   end
